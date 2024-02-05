@@ -1,9 +1,65 @@
+"use client"
+import { useState } from 'react';
+
 const nav_buttons = ["Home", "About", "All Countries", "Browse", "Profile"];
 
-const countries = ["Philippines", "Singapore", "Australia", "Mexico"];
+const country_api = "https://restcountries.com/v3.1/all?fields="
+
+const countries = [];
 
 export function SearchBar() {
-    return <form className="flex mx-5 border-2 px-2 py-3 rounded-full justify-center">Type a country...</form>
+    return (
+        <section>
+            <CountrySearch />
+        </section>
+    );
+}
+
+export function Form({ id, placeholder, onKeyDown }) {
+    return (
+        <div className="mx-5 border-2 px-2 py-3 rounded-full justify-center">
+            <input type="text" id={id} placeholder={placeholder} onKeyDown={onKeyDown}/>
+        </div>
+    );
+}
+
+function CountrySearch() {
+    const [input, setInput] = useState();
+    const [submit, setSubmit] = useState(false);
+    const originalState = [];
+    const [countries, setCountries] = useState(originalState);
+    function handleSubmit(e) {
+        if (e.key == "Enter") {
+            e.preventDefault();
+            setInput(e.target.value);
+            setCountries([
+                ...countries, e.target.value
+            ])
+            setSubmit(true);        
+        }
+    }
+    if (submit == true) {
+        return (
+            <section>
+                <Form id={"countrySearch"}
+                    placeholder={"Type a country..."}
+                    onKeyDown={handleSubmit}
+                />
+                <ul>
+                    {countries.map(country => (<CountryCard input={country}/>))}
+                </ul>
+            </section>
+        )
+    }
+    return (
+        <section>
+            <Form id={"countrySearch"}
+                placeholder={"Type a country..."}
+                onKeyDown={handleSubmit}
+        />
+        </section>
+        
+    );
 }
 
 export function NavBar() {
@@ -21,19 +77,13 @@ function NavButton({ label }) {
     );
 }
 
-function Country() {
-    const number = Math.floor(Math.random() * 4);
-    const country = countries[number];
-    return (
-        <h1 className="px-5 py-3 text-md text-white font-bold">{country}</h1>
-    );
-}
-
-export function CountryCard() {
+export function CountryCard( { input } ) {
     return (
         <div className="flex justify-center h-auto w-auto my-10">
             <div className="h-80 w-80 rounded-2xl bg-blue-200 shadow-2xl">
-                <CountryPhoto/>
+                <Country 
+                    countryName={input}
+                />
                 <CountryLocation/>
                 <Button
                     text={"Learn More!"}
@@ -43,10 +93,10 @@ export function CountryCard() {
     );
 }
 
-function CountryPhoto() {
+function Country( { countryName } ) {
     return (
         <div className="mx-2 my-2 h-40 w-76 rounded-2xl bg-slate-300 shadow-xl">
-             <Country/>
+         <h1 className="px-5 py-3 text-md text-white font-bold">{countryName}</h1>
         </div>
     );
 }
