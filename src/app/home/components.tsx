@@ -1,9 +1,11 @@
 "use client"
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const nav_buttons = ["Home", "About", "All Countries", "Browse", "Profile"];
 
 const country_api = "https://restcountries.com/v3.1/all?fields="
+
+const userCountryApi = "https://api.country.is"
 
 const countries = [];
 
@@ -85,9 +87,6 @@ export function CountryCard( { input } ) {
                     countryName={input}
                 />
                 <CountryLocation/>
-                <Button
-                    text={"Learn More!"}
-                />
             </div>
         </div>
     );
@@ -107,8 +106,56 @@ function CountryLocation() {
     );
 }
 
-function Button({ text }) {
+function Button({ style, text, onClick }) {
     return (
-        <h1 className="px-3 py-2 text-center text-xs text-black font-bold rounded-2xl border-2 border-black px-2 ml-40 mr-4 mt-4 bg-slate-200">{text}</h1>
+        <button className={style} onClick={onClick}>{text}</button>
     );
 }
+
+export function MyCountryButton() {
+    const [click, setClick] = useState(false);
+    const [country, setCountry] = useState(null);
+    const [err, setErr] = useState(null);
+    async function handleClick() {
+        try {
+            const response = await fetch(userCountryApi, {
+                method:"GET",
+                headers: {
+                    "Accept": "application/json",
+                }
+            });
+            const responseText = await response.json();
+            const userCountry = responseText["country"];
+            console.log(userCountry);
+            setCountry(userCountry)
+            return (
+                    <section>
+                        <h1>{country}</h1>
+                    </section>
+            );
+        }
+        catch (err) {
+            setErr("Can't find your country doofus");
+            console.log(err);
+        }
+    }
+    return (
+        <section>
+             <Button 
+                style={"px-3 py-2 text-center text-xs text-black font-bold rounded-2xl border-2 border-black px-2 ml-40 mr-4 mt-4 bg-slate-200" }
+                text={"What's my country?"}
+                onClick={handleClick}
+            />
+            {country && (
+                <section>
+                    <h1 className="text-md text-black font-bold">Your country is: </h1>
+                    <CountryCard 
+                        input={country}
+                    />
+                </section>
+            )}
+            {err && <p>{err}</p>}
+        </section>
+    );
+}
+

@@ -1,4 +1,4 @@
-// File: C:\Users\lance\Documents\Projects\countries_app\src\app\layout.tsx
+// File: /Users/lance/Documents/countries-app/countries-test-app/src/app/layout.tsx
 import * as entry from '../../../src/app/layout.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 
