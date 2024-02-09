@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 
 const nav_buttons = ["Home", "About", "All Countries", "Browse", "Profile"];
 
-const country_api = "https://restcountries.com/v3.1/all?fields="
+const countryNameApi = "https://restcountries.com/v3.1/"
 
 const userCountryApi = "https://api.country.is"
 
@@ -79,12 +79,28 @@ function NavButton({ label }) {
     );
 }
 
+function checkFormat(input) {
+    const [endpoint, setEndpoint] = useState("name/");
+    useEffect(() => {
+        if (input.length <= 2) {
+            setEndpoint("alpha/")
+        };
+    }, [endpoint]);
+    return endpoint;
+}
+
 export function CountryCard( { input } ) {
+    const link = checkFormat(input);
+    console.log(link);
     return (
         <div className="flex justify-center h-auto w-auto my-10">
-            <div className="h-80 w-80 rounded-2xl bg-blue-200 shadow-2xl">
+            <div className="h-80 w-80 rounded-2xl bg-blue-200 shadow-2xl text-wrap">
                 <Country 
                     countryName={input}
+                />
+                <AccessCountryApi 
+                    country={input}
+                    endpoint={link}
                 />
                 <CountryLocation/>
             </div>
@@ -115,6 +131,7 @@ function Button({ style, text, onClick }) {
 export function MyCountryButton() {
     const [click, setClick] = useState(false);
     const [country, setCountry] = useState(null);
+    const [ip, setIp] = useState(null);
     const [err, setErr] = useState(null);
     async function handleClick() {
         try {
@@ -126,16 +143,13 @@ export function MyCountryButton() {
             });
             const responseText = await response.json();
             const userCountry = responseText["country"];
+            const userIp = responseText["ip"];
             console.log(userCountry);
-            setCountry(userCountry)
-            return (
-                    <section>
-                        <h1>{country}</h1>
-                    </section>
-            );
+            setCountry(userCountry);
+            setIp(userIp);
         }
         catch (err) {
-            setErr("Can't find your country doofus");
+            setErr(err);
             console.log(err);
         }
     }
@@ -152,6 +166,64 @@ export function MyCountryButton() {
                     <CountryCard 
                         input={country}
                     />
+                    <h1 className="text-md text-black font-bold">Your IP is: {ip}</h1>
+                </section>
+            )}
+            {err && <p>{err}</p>}
+        </section>
+    );
+}
+
+function AccessCountryApi ( { country, endpoint } ) {
+    const originalState = [];
+    const [details, setDetails] = useState(originalState);
+    const [err, setErr] = useState(null);
+    useEffect(() => {
+        async function getCountryDetails(country) {
+            try {
+                const link = countryNameApi + endpoint + country;
+                console.log(link);
+                const response = await fetch(link, {
+                    method: "GET",
+                    headers: {
+                        "Accept": "application/json"
+                    }
+                });
+                const responseJson = await response.json();
+                const countryDetails = {
+                    population: responseJson.map(a => a.population),
+                    timeZone: responseJson.map(a => a.timezones),
+                    currency: responseJson.map(a => a.currencies)
+                };
+                setDetails([
+                    ...details, countryDetails
+                ]);
+            }
+            catch (err) {
+                setErr(err);
+                alert(err);
+            }
+        }
+        if (country) {
+            getCountryDetails(country);
+           
+        }
+   
+    }, [country]);
+    return (
+        <section>
+            {details && (
+                <section className="text-wrap">
+                    <div>
+                    </div>
+                    <ul className="text-wrap">
+                        {details.map((details, index) => (
+                            <li key={index}>
+                                <p className="text-wrap">Population: {details.population}</p>
+                                <p>Timezone: {details.timeZone}</p>
+                            </li>
+                        ))}
+                    </ul>
                 </section>
             )}
             {err && <p>{err}</p>}
